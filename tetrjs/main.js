@@ -173,14 +173,20 @@ function validPlace(block, x_pos, y_pos, rot) {
 	var polysize = shape.length;
 	for(var delta_y = 0; delta_y < polysize; delta_y++) {
 		for(var delta_x = 0; delta_x < polysize; delta_x++) {
-			if(shape[delta_y][delta_x] == 0) { continue }
-			var checked_x = delta_x + x_pos;
-			var checked_y = delta_y + y_pos;
-			if(checked_y > 19 || checked_x < 0 || checked_x > 9) {
-				return false; // Out of bounds
-			}
-			if(grid[checked_y][checked_x] != 0) {
-				return false; // Blocked
+			var checked_x = delta_y + x_pos;
+			var checked_y = delta_x + y_pos;
+			
+			if(shape[delta_x][delta_y] != 0) {
+				if(checked_y > 19 || checked_x < 0 || checked_x > 9) {
+					return false; // Out of bounds
+				}
+				try {
+					if(grid[checked_y][checked_x] != 0) {
+						return false; // Blocked
+					}
+				} catch {
+					return false;
+				}
 			}
 		}
 	}
@@ -333,7 +339,8 @@ function press(e) {
 
 	if(e.key == keybinds.flip) {
 		if(holding.flip) { return }
-		rotate('180');
+		rotate('cw');
+		rotate('cw');
 		holding.flip = true;
 	}
 
@@ -377,17 +384,7 @@ function moveRight() {
 }
 
 function rotate(rotation) {
-	if(current_rot < 0) {
-		current_rot = -(-(current_rot)%4) + 4;
-	} else {
-		current_rot = current_rot%4;
-	}
-	if(rotation == "180") {
-		if(validPlace(current_block, current_x, current_y, current_rot+2)) {
-			current_rot += 2;
-		}
-		return;
-	}
+	current_rot %= 4;
 	var wanted_direction;
 	if(rotation == "cw") {
 		wanted_direction = 1;
