@@ -1,0 +1,24 @@
+/* #tetris {
+    border: 9px solid black;
+    border-radius: 25px;
+} */
+
+#tetrisdiv {
+    text-align: center;
+    border: 9px solid black;
+    border-radius: 25px;
+    height: 838px;
+}
+
+#tetrisdiv.shrink {
+    height: 460px;
+}
+
+#tetris.shrink {
+    height: 400px;
+}
+
+.unrendered {
+    display: none;
+    background-color: blue;
+}

@@ -3,7 +3,6 @@ body {
     color: #C0C0C0;
 }
 
-
 a {
     color: cyan;
 }
@@ -12,3 +11,21 @@ a:visited {
     color: mediumaquamarine;
 }
 
+button {
+    font-family : inherit;
+    background-color: transparent;
+    color: #FFFFFF;
+    border: 2px solid #555555;
+    text-align: center;
+    text-decoration: none;
+}
+
+button:hover {
+    background-color: #555555;
+    cursor: pointer;
+}
+
+.rounded {
+    
+    border-radius: 10%;
+}
