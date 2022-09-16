@@ -296,6 +296,7 @@ function clearLines() {
 	}
 	if(cleared_lines > 0) {
 		scoreClears(cleared_lines, tspinned);
+		combo++;
 	} else {
 		combo = 0;
 	}
@@ -344,8 +345,7 @@ function scoreClears(num_lines, tspinned) {
 	}
 	if(tspinned || num_lines >= 4) {
 		b2b_chain++;
-	}
-	if(!tspinned) {
+	} else {
 		b2b_chain = 0;
 	}
 	score += points_this_turn;
