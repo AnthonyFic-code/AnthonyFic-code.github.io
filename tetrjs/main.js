@@ -45,6 +45,18 @@ function arr_change() {
 	}
 }
 
+const background = document.getElementById("main")
+const bg_button = document.getElementById("bg_change");
+bg_button.addEventListener("click", bg_change);
+function bg_change() {
+	var input = prompt("Input image link\nRemember, HTML will loop it if the file isn't very large.");
+	if(input == null || input == "") {
+		background.style["background-image"] = "url(saiph_unsplash.png)";
+	} else {
+		background.style["background-image"] = "url(" + input + ")";
+	}
+	
+}
 
 
 
@@ -57,24 +69,38 @@ import { kicks } from './kicks.js';
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
-var grid = [];
-for (var i = 0; i < 20; i++) {
-	grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-}
-
 // Visuals
 function display() {
 	// resetting grid
-	ctx.clearRect(0, 0, canvas.width, canvas.height);;
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.fillStyle = 'rgb(255, 255, 255)';
 	ctx.font = '36px Montserrat';
 	ctx.fillText('HOLD', 80, 50);
 	ctx.fillText('LEVEL', 75, 600);
 	ctx.fillText('LINES', 75, 740);
+	if(combo > 1) {
+		ctx.fillStyle = 'rgb(0, 125, 255)';
+		ctx.fillText('COMBO', 50, 480);
+		ctx.fillText('x' + combo, 50, 450);
+	}
 	if(b2b_chain > 0) {
 		ctx.fillStyle = 'rgb(255, 125, 4)';
 		ctx.fillText('🔥 B2B x' + b2b_chain, 0, 520);
 	}
+	if(reloading) {
+		ctx.font = '24px Montserrat';
+		ctx.fillStyle = 'rgb(255, 0, 0)';
+		ctx.fillText('RESETTING!', 600, 480);
+		ctx.fillText("Hit " + keybinds.confirm, 600, 744);
+		ctx.fillText("or anything else", 600, 768);
+		ctx.fillText("to cancel.", 600, 792);
+		ctx.font = '36px Montserrat';
+	}
+	ctx.fillStyle = 'rgb(128, 255, 128, ' + frames_until_hidden/480 + ')';
+	ctx.fillText('+' + recent_score, 615, 550);
+	ctx.fillStyle = 'rgb(128, 255, 128)';
+	ctx.fillRect(615, 560, 150*(frames_until_hidden/480), 5);
+
 	ctx.fillStyle = 'rgb(255, 255, 255)';
 	ctx.fillText('SCORE', 615, 600);
 	ctx.fillText('NEXT', 615, 50);
@@ -156,6 +182,15 @@ function display() {
 		}
 	}
 
+	if(paused) {
+		ctx.font = '72px Montserrat'
+		ctx.fillStyle = 'rgb(0, 0, 0, 0.5)'
+		ctx.fillRect(220, 300, 360, 145);
+		ctx.fillStyle = 'rgb(255, 0, 0)';
+		ctx.fillText('PAUSED', 245, 385);
+		ctx.font = '24px Montserrat'
+		ctx.fillText('(click ' + keybinds.paused + ' to unpause)', 245, 425);
+	}
 }
 
 
@@ -207,7 +242,7 @@ function arraysEqual(a, b) {
 
 function formattedScore(n) {
 	if(n < 1000000) {
-		return n;
+		return Math.floor(n);
 	} else if (n < 1000000000) {
 		return Math.floor(n/100000) / 10 + "m";
 	} else {
@@ -304,6 +339,7 @@ function clearLines() {
 
 function scoreClears(num_lines, tspinned) {
 	var points_this_turn = 0;
+	frames_until_hidden = 480;
 	var b2b_multi = b2b_chain > 0 ? 1.5 : 1;
 	var combo_multi = 1 + ((combo) / 10);
 	if(arraysEqual(grid[19], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) {
@@ -348,7 +384,9 @@ function scoreClears(num_lines, tspinned) {
 	} else {
 		b2b_chain = 0;
 	}
+	points_this_turn = Math.floor(points_this_turn);
 	score += points_this_turn;
+	recent_score += points_this_turn;
 }
 
 function checkTspin() {
@@ -372,19 +410,28 @@ function checkTspin() {
 	return (t_counter >= 3);
 }
 
+const default_bag = ['z', 's', 'l', 'j', 't', 'i', 'o'];
+
 // Gameplay
 // ⮞ General
+var grid = [];
+for (var i = 0; i < 20; i++) {
+	grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+}
 var level = 0;
 var alive = true;
 var lines = 0;
+var reloading = false;
+var paused = false;
+var recent_score = 0;
 // ⮞ Scoring-related
 var score = 0;
 var b2b_chain = 0;
 var combo = 0;
+var frames_until_hidden = 0;
 // ⮞ Queue-related
-var bag_starter_type = ['z', 's', 'l', 'j', 't', 'i', 'o'];
 var bag_starter = [];
-bag_starter_type.forEach(item => bag_starter.push(blocks[item]));
+default_bag.forEach(item => bag_starter.push(blocks[item]));
 var nexts = [];
 // ⮞ Current piece-related
 var current_x;
@@ -410,7 +457,10 @@ var holding = {
 	ccw: false,
 	flip: false,
 	hold: false,
-	drop: false
+	drop: false,
+	reset: false,
+	confirm: false,
+	paused: false
 };
 // https://www.w3schools.com/js/js_cookies.asp
 var keybinds = {
@@ -421,7 +471,10 @@ var keybinds = {
 	ccw: "z",
 	flip: "a",
 	hold: "c",
-	drop: " "
+	drop: " ",
+	reset: "r",
+	confirm: "Enter",
+	paused: "p"
 }
 var das = 10 // DELAYED AUTO SHIFT - frames until ARR activates
 var arr = 2 // AUTOMATIC REPEAT RATE - frames per repeat
@@ -431,12 +484,68 @@ var arr_delay_remaining_side = arr;
 var das_delay_remaining_down = das;
 var arr_delay_remaining_down = arr;
 
+function resetGame() {
+	clearInterval(loop);
+	grid = [];
+	for (var i = 0; i < 20; i++) {
+		grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+	}
+	level = 0;
+	alive = true;
+	lines = 0;
+	score = 0;
+	b2b_chain = 0;
+	combo = 0;
+	nexts = [];
+	current_x = null;
+	current_y = null;
+	current_rot = null;
+	current_block = null;
+	current_shape = null;
+	frames_per_down = null;
+	frames_until_down = null;
+	frames_to_lock = 50;
+	frames_until_lock = frames_to_lock;
+	can_hold = true;
+	held = null;
+	frames_until_hidden = 0;
+	recent_score = 0;
+	paused = false;
+
+	arrayRandomize(bag_starter).forEach(item => nexts.push(item));
+	nextPiece();
+	loop = setInterval(gameloop, 16);
+}
+
 
 addEventListener("keydown", press);
 addEventListener("keyup", unpress);
 
-async function press(e) {
+function press(e) {
+
+	if(e.key == keybinds.confirm && reloading) {
+		if(holding.confirm) { return }
+		holding.confirm = true;
+		resetGame();
+	}
+	reloading = false;
+
+	if(e.key == keybinds.reset) {
+		if(holding.reset) { return }
+		holding.reset = true;
+		reloading = true;
+	}
+
+	if(e.key == keybinds.paused) {
+		if(holding.paused) { return }
+		holding.paused = true;
+		paused = !paused;
+		display();
+	}
+
 	if(!alive) { return }
+	if(paused) { return }
+
 	if(e.key == keybinds.down) {
 		if(holding.down) { return }
 		moveDown();
@@ -505,6 +614,9 @@ function unpress(e) {
 	if(e.key == keybinds.flip) {holding.flip = false;}
 	if(e.key == keybinds.hold) {holding.hold = false;}
 	if(e.key == keybinds.drop) {holding.drop = false;}
+	if(e.key == keybinds.reset) {holding.reset = false;}
+	if(e.key == keybinds.confirm) {holding.confirm = false;}
+	if(e.key == keybinds.paused) {holding.paused = false;}
 }
 
 function moveDown() {
@@ -648,6 +760,12 @@ function died() {
 }
 
 function gameloop() {
+	if(paused) { return; }
+	frames_until_hidden--;
+	if(frames_until_hidden < 0) {
+		recent_score = 0;
+		frames_until_hidden = 0;
+	}
 	if(das_delay_remaining_side == 0) {
 		arr_delay_remaining_side--;
 		if(arr_delay_remaining_side < 0) {
