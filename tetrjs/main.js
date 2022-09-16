@@ -13,6 +13,37 @@ function toggle_more() {
 		more_opened = true;
 	}
 }
+const controls_button = document.getElementById("controls");
+controls_button.addEventListener("click", control_change);
+function control_change() {
+	var current_controls = JSON.stringify(keybinds);
+	var inputted_controls = prompt("Please input control schema", current_controls);
+	if(inputted_controls == null || inputted_controls == "") {
+		return;
+	} else {
+		keybinds = JSON.parse(inputted_controls);
+	}
+}
+const das_button = document.getElementById("das");
+das_button.addEventListener("click", das_change);
+function das_change() {
+	var input = prompt("Input new DAS value\nDAS is the amount of frames until auto-repeat activates.", das);
+	if(input == null || input == "") {
+		return;
+	} else {
+		das = parseInt(input);
+	}
+}
+const arr_button = document.getElementById("arr");
+arr_button.addEventListener("click", arr_change);
+function arr_change() {
+	var input = prompt("Input new ARR value\nARR is Auto-Repeat Rate.", arr);
+	if(input == null || input == "") {
+		return;
+	} else {
+		arr = parseInt(input);
+	}
+}
 
 
 
@@ -33,8 +64,6 @@ for (var i = 0; i < 20; i++) {
 
 // Visuals
 function display() {
-
-
 	// resetting grid
 	ctx.clearRect(0, 0, canvas.width, canvas.height);;
 	ctx.fillStyle = 'rgb(255, 255, 255)';
@@ -323,7 +352,24 @@ function scoreClears(num_lines, tspinned) {
 }
 
 function checkTspin() {
-	return false;
+	if(current_y == 18) { return false; }
+	var t_counter = 0;
+	if(current_block == blocks['t']) {
+		//current_x + 1, current_y + 1 == center
+		if(grid[current_y][current_x] != 0) {
+			t_counter += 1;
+		}
+		if(grid[current_y + 2][current_x] != 0) {
+			t_counter += 1;
+		}
+		if(grid[current_y][current_x + 2] != 0) {
+			t_counter += 1;
+		}
+		if(grid[current_y + 2][current_x + 2] != 0) {
+			t_counter += 1;
+		}
+	}
+	return (t_counter >= 3);
 }
 
 // Gameplay
