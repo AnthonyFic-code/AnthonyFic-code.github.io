@@ -1,3 +1,24 @@
+// Page 
+
+var more_opened = false;
+const more_span = document.getElementById("more");
+const more_button = document.getElementById("buttons");
+more_button.addEventListener("click", toggle_more);
+function toggle_more() {
+	if(more_opened) {
+		more_span.classList.add("unrendered");
+		more_opened = false;
+	} else {
+		more_span.classList.remove("unrendered");
+		more_opened = true;
+	}
+}
+
+
+
+
+//// TETR.JS
+
 // Setup
 import { blocks } from './blocks.js';
 import { kicks } from './kicks.js';
@@ -9,26 +30,29 @@ var grid = [];
 for (var i = 0; i < 20; i++) {
 	grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 }
-/*
-const variable = document.getElementById( );
-variable.addEventListener("click", func);
-variable.classList.add( );
-*/
 
 // Visuals
-
 function display() {
+
+
 	// resetting grid
 	ctx.clearRect(0, 0, canvas.width, canvas.height);;
 	ctx.fillStyle = 'rgb(255, 255, 255)';
 	ctx.font = '36px Montserrat';
 	ctx.fillText('HOLD', 80, 50);
 	ctx.fillText('LEVEL', 75, 600);
+	ctx.fillText('LINES', 75, 740);
+	if(b2b_chain > 0) {
+		ctx.fillStyle = 'rgb(255, 125, 4)';
+		ctx.fillText('🔥 B2B x' + b2b_chain, 0, 520);
+	}
+	ctx.fillStyle = 'rgb(255, 255, 255)';
 	ctx.fillText('SCORE', 615, 600);
 	ctx.fillText('NEXT', 615, 50);
 	ctx.font = '36px Ubuntu';
 	ctx.fillText(formattedScore(score), 615, 640);
-	ctx.fillText(level, 129-numDigits(level)*9, 640);
+	ctx.fillText(level, 129-numDigits(level)*10.5, 640);
+	ctx.fillText(lines, 129-numDigits(lines)*10.5, 780);
     // draw grid
     for(var row = 0; row < 20; row++) {
         for (var col = 0; col < 10; col++) {
@@ -102,7 +126,7 @@ function display() {
 			ctx.fillRect(ghost_x_pos + 234, ghost_y_pos + 2, 4, 36);
 		}
 	}
-	
+
 }
 
 
@@ -138,6 +162,18 @@ function numDigits(n) {
 		digits++;
 	}
 	return digits;
+}
+
+// https://stackoverflow.com/a/16436975
+function arraysEqual(a, b) {
+	if (a === b) return true;
+	if (a == null || b == null) return false;
+	if (a.length !== b.length) return false;
+
+	for (var i = 0; i < a.length; ++i) {
+	  if (a[i] !== b[i]) return false;
+	}
+	return true;
 }
 
 function formattedScore(n) {
@@ -196,7 +232,6 @@ function validPlace(block, x_pos, y_pos, rot) {
 function addMinos(block, x_pos, y_pos, rot) {
 	var shape = block.rot(rot);
 	var polysize = shape.length;
-	if (!validPlace(block, x_pos, y_pos, rot)) { return; }
 	for(var delta_y = 0; delta_y < polysize; delta_y++) {
 		for(var delta_x = 0; delta_x < polysize; delta_x++) {
 			var checked_x = delta_x + x_pos;
@@ -224,29 +259,82 @@ function clearLines() {
 			cleared_rows.push(row);
 		}
 	}
-	scoreClears(cleared_lines);
+	var tspinned = checkTspin();
 	for(var i = 0; i < cleared_rows.length; i++) {
 		var clearing_line = cleared_rows[i];
 		grid.splice(clearing_line, 1);
 		grid.unshift([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 	}
+	if(cleared_lines > 0) {
+		scoreClears(cleared_lines, tspinned);
+	} else {
+		combo = 0;
+	}
 }
 
-function scoreClears() {
-	checkTspin();
+function scoreClears(num_lines, tspinned) {
+	var points_this_turn = 0;
+	var b2b_multi = b2b_chain > 0 ? 1.5 : 1;
+	var combo_multi = 1 + ((combo) / 10);
+	if(arraysEqual(grid[19], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) {
+		points_this_turn += (4000 * level);
+	}
+	lines += num_lines;
+	level = Math.floor(lines/10) + 1;
+	if(tspinned) {
+		switch(num_lines) {
+			case 1:
+				points_this_turn += 400 * level * b2b_multi * combo_multi;
+				break;
+			case 2:
+				points_this_turn += 1200 * level * b2b_multi * combo_multi;
+				break;
+			case 3:
+				points_this_turn += 1800 * level * b2b_multi * combo_multi;
+				break;
+			default:
+				break;
+		}
+	} else {
+		switch(num_lines) {
+			default:
+				break;
+			case 1:
+				points_this_turn += 50 * level * b2b_multi * combo_multi;
+				break;
+			case 2:
+				points_this_turn += 200 * level * b2b_multi * combo_multi;
+				break;
+			case 3:
+				points_this_turn += 400 * level * b2b_multi * combo_multi;
+				break;
+			case 4:
+				points_this_turn += 1200 * level * b2b_multi * combo_multi;
+				break;
+		}
+	}
+	if(tspinned || num_lines >= 4) {
+		b2b_chain++;
+	}
+	if(!tspinned) {
+		b2b_chain = 0;
+	}
+	score += points_this_turn;
 }
 
 function checkTspin() {
-
+	return false;
 }
 
 // Gameplay
 // ⮞ General
-var level = 1;
+var level = 0;
 var alive = true;
+var lines = 0;
 // ⮞ Scoring-related
 var score = 0;
 var b2b_chain = 0;
+var combo = 0;
 // ⮞ Queue-related
 var bag_starter_type = ['z', 's', 'l', 'j', 't', 'i', 'o'];
 var bag_starter = [];
@@ -258,6 +346,12 @@ var current_y;
 var current_rot;
 var current_block;
 var current_shape;
+
+var frames_per_down;
+var frames_until_down;
+var frames_to_lock = 50;
+var frames_until_lock = frames_to_lock;
+var resets_left;
 // ⮞ Held piece-related
 var can_hold = true;
 var held;
@@ -295,7 +389,7 @@ var arr_delay_remaining_down = arr;
 addEventListener("keydown", press);
 addEventListener("keyup", unpress);
 
-function press(e) {
+async function press(e) {
 	if(!alive) { return }
 	if(e.key == keybinds.down) {
 		if(holding.down) { return }
@@ -339,8 +433,7 @@ function press(e) {
 
 	if(e.key == keybinds.flip) {
 		if(holding.flip) { return }
-		rotate('cw');
-		rotate('cw');
+		rotate('180');
 		holding.flip = true;
 	}
 
@@ -374,18 +467,39 @@ function moveDown() {
 }
 
 function moveLeft() {
+	if(frames_until_lock != frames_to_lock && resets_left > 0) {
+		frames_until_lock = frames_to_lock;
+		resets_left--;
+	}
 	if(!validPlace(current_block, current_x-1, current_y, current_rot)) { return; }
 	current_x--;
 }
 
 function moveRight() {
+	if(frames_until_lock != frames_to_lock && resets_left > 0) {
+		frames_until_lock = frames_to_lock;
+		resets_left--;
+	}
 	if(!validPlace(current_block, current_x+1, current_y, current_rot)) { return; }
 	current_x++;
 }
 
 function rotate(rotation) {
-	current_rot %= 4;
+	if(frames_until_lock != frames_to_lock && resets_left > 0) {
+		frames_until_lock = frames_to_lock;
+		resets_left--;
+	}
 	var wanted_direction;
+
+	if(rotation == "180") {
+		if(validPlace(current_block, current_x, current_y, current_rot - 2)) {
+			current_rot--;
+			current_rot--;
+			current_shape = current_block.rot(current_rot);
+			return;
+		}
+	}
+
 	if(rotation == "cw") {
 		wanted_direction = 1;
 	} else {
@@ -396,12 +510,17 @@ function rotate(rotation) {
 		return;
 	}
 
+	var tested_rotation;
+	if(current_rot >= 0) {
+		tested_rotation = current_rot%4;
+	} else {
+		tested_rotation = (-(-(current_rot)%4) + 4 ) % 4;
+	}
 	if(current_block != blocks['i']) {
 		for(var temp_rot = 0; temp_rot < 5; temp_rot++) {
-			var active_dx = kicks[current_rot][rotation][temp_rot][0];
-			var active_dy = -kicks[current_rot][rotation][temp_rot][1];
-			if(validPlace(current_block, current_x + active_dx, current_y + active_dy, current_rot + wanted_direction)) {
-				current_rot += wanted_direction;
+			var active_dx = kicks[tested_rotation][rotation][temp_rot][0];
+			var active_dy = -kicks[tested_rotation][rotation][temp_rot][1];
+			if(validPlace(current_block, current_x + active_dx, current_y + active_dy, current_rot + wanted_direction)) {				current_rot += wanted_direction;
 				current_x += active_dx;
 				current_y += active_dy;
 				current_shape = current_block.rot(current_rot);
@@ -411,8 +530,8 @@ function rotate(rotation) {
 		return;
 	} else {
 		for(var temp_rot = 0; temp_rot < 5; temp_rot++) {
-			var active_dx = kicks['i'][current_rot][rotation][temp_rot][0];
-			var active_dy = -kicks['i'][current_rot][rotation][temp_rot][1];
+			var active_dx = kicks['i'][tested_rotation][rotation][temp_rot][0];
+			var active_dy = -kicks['i'][tested_rotation][rotation][temp_rot][1];
 			if(validPlace(current_block, current_x + active_dx, current_y + active_dy, current_rot + wanted_direction)) {
 				current_rot += wanted_direction;
 				current_x += active_dx;
@@ -448,10 +567,14 @@ function fullDrop() {
 }
 
 function nextPiece() {
+	frames_per_down = Math.floor(99 / Math.pow(1.1, level));
+	frames_until_down = frames_per_down;
+	frames_to_lock = 50;
+	frames_until_lock = frames_to_lock;
+	resets_left = 5;
 	current_block = nexts[0];
 	nexts.splice(0, 1);
 	if(!validPlace(current_block, 3, 0, 0)) { 
-		stopInterval(loop);
 		died();
 		return;
 	}
@@ -468,22 +591,34 @@ function nextPiece() {
 }
 
 function died() {
+	clearInterval(loop);
 	current_x = null;
 	current_y = null;
 	current_rot = null;
 	current_shape = null;
 	current_block = null;
 	alive = false;
+	display();
 }
 
 function gameloop() {
 	if(das_delay_remaining_side == 0) {
 		arr_delay_remaining_side--;
-		if(arr_delay_remaining_side == 0) {
+		if(arr_delay_remaining_side < 0) {
 			if(holding.left) {
+				if(arr == 0) { 
+					while (validPlace(current_block, current_x - 1, current_y, current_rot)){
+						moveLeft();
+					}
+				}
 				moveLeft();
 			} 
 			if(holding.right) {
+				if(arr == 0) { 
+					while (validPlace(current_block, current_x + 1, current_y, current_rot)){
+						moveRight();
+					}
+				}
 				moveRight();
 			}
 			arr_delay_remaining_side = arr;
@@ -504,7 +639,18 @@ function gameloop() {
 		das_delay_remaining_down--;
 	}
 
-
+	frames_until_down--;
+	if(frames_until_down < 0) {
+		if(!validPlace(current_block, current_x, current_y+1, current_rot)) {
+			frames_until_lock--;
+			if(frames_until_lock < 0) {
+				fullDrop();
+			}
+		} else {
+			moveDown();
+			frames_until_down = frames_per_down;
+		}
+	}
 	display();
 }
 
