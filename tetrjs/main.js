@@ -22,6 +22,7 @@ function control_change() {
 		return;
 	} else {
 		keybinds = JSON.parse(inputted_controls);
+		generateCookie();
 	}
 }
 const das_button = document.getElementById("das");
@@ -32,6 +33,7 @@ function das_change() {
 		return;
 	} else {
 		das = parseInt(input);
+		generateCookie();
 	}
 }
 const arr_button = document.getElementById("arr");
@@ -42,6 +44,7 @@ function arr_change() {
 		return;
 	} else {
 		arr = parseInt(input);
+		generateCookie();
 	}
 }
 
@@ -55,10 +58,25 @@ function bg_change() {
 	} else {
 		background.style["background-image"] = "url(" + input + ")";
 	}
+	generateCookie();
 	
 }
 
+function generateCookie() {
+	var cookie_data = {
+		keybinds: keybinds,
+		das: das,
+		arr: arr,
+		bg: background.style["background-image"]
+	}
+	const d = new Date();
+	d.setTime(d.getTime() + (365*86400*1000));
+	var date = "expires="+ d.toUTCString();
 
+	var cookie_string = "data=" + JSON.stringify(cookie_data) + "; =" + date;
+	document.cookie = cookie_string;
+	console.log(cookie_data);
+}
 
 //// TETR.JS
 
@@ -90,10 +108,11 @@ function display() {
 	if(reloading) {
 		ctx.font = '24px Montserrat';
 		ctx.fillStyle = 'rgb(255, 0, 0)';
-		ctx.fillText('RESETTING!', 600, 480);
-		ctx.fillText("Hit " + keybinds.confirm, 600, 744);
-		ctx.fillText("or anything else", 600, 768);
-		ctx.fillText("to cancel.", 600, 792);
+		ctx.fillText('RESETTING!', 600, 696);
+		ctx.fillText("Hit " + keybinds.confirm, 600, 720);
+		ctx.fillText("to confirm.", 600, 744);
+		ctx.fillText("Anything else", 600, 768);
+		ctx.fillText("will cancel.", 600, 792);
 		ctx.font = '36px Montserrat';
 	}
 	ctx.fillStyle = 'rgb(128, 255, 128, ' + frames_until_hidden/480 + ')';
@@ -104,6 +123,10 @@ function display() {
 	ctx.fillStyle = 'rgb(255, 255, 255)';
 	ctx.fillText('SCORE', 615, 600);
 	ctx.fillText('NEXT', 615, 50);
+	
+	if(!alive) {
+		ctx.fillStyle = 'rgb(255, 96, 96)';
+	}
 	ctx.font = '36px Ubuntu';
 	ctx.fillText(formattedScore(score), 615, 640);
 	ctx.fillText(level, 129-numDigits(level)*10.5, 640);
@@ -534,6 +557,9 @@ function press(e) {
 		if(holding.reset) { return }
 		holding.reset = true;
 		reloading = true;
+		if(paused){
+			display();
+		}
 	}
 
 	if(e.key == keybinds.paused) {
@@ -816,6 +842,19 @@ function gameloop() {
 		}
 	}
 	display();
+}
+
+function loadSettings() {
+	var settings = JSON.parse(document.cookie.substring(5));
+	console.log(settings);
+	keybinds = settings.keybinds;
+	das = settings.das;
+	arr = settings.arr;
+	background.style["background-image"] = settings.bg;
+}
+
+if(document.cookie != "") {
+	loadSettings();
 }
 
 arrayRandomize(bag_starter).forEach(item => nexts.push(item));
