@@ -151,9 +151,14 @@ function display() {
 		for(var row = 0; row < current_displayed_piece.length; row++) {
 			for(var col = 0; col < current_displayed_piece[row].length; col++) {
 				if (current_displayed_piece[row][col] == 0) { continue; }
-				var temp_color = (current_displayed_piece[row][col] == 0) ? 'rgb(40, 40, 40)' : findColor(current_displayed_piece[row][col]);
 				var hold_x_pos = (col + 3) * 30
 				var hold_y_pos = (row + 2) * 30
+				var temp_color;
+				if(!can_hold) {
+					temp_color = 'rgb(128, 128, 128)'
+				} else {
+					temp_color = (current_displayed_piece[row][col] == 0) ? 'rgb(40, 40, 40)' : findColor(current_displayed_piece[row][col]);
+				}
 				ctx.fillStyle = temp_color;
 				ctx.fillRect(hold_x_pos + 1, hold_y_pos + 1, 28, 28);
 			}
@@ -534,6 +539,7 @@ function resetGame() {
 	frames_until_hidden = 0;
 	recent_score = 0;
 	paused = false;
+	reloading = false;
 
 	arrayRandomize(bag_starter).forEach(item => nexts.push(item));
 	nextPiece();
@@ -551,13 +557,17 @@ function press(e) {
 		holding.confirm = true;
 		resetGame();
 	}
+	if(reloading && paused) {
+		reloading = false;
+		display();
+	}
 	reloading = false;
 
 	if(e.key == keybinds.reset) {
 		if(holding.reset) { return }
 		holding.reset = true;
 		reloading = true;
-		if(paused){
+		if(paused || !alive){
 			display();
 		}
 	}

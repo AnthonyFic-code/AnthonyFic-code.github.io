@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+
+<html>
+<link rel="icon" href="" type="image/png">
+
+<head>
+    <title>
+        Keybinds Generator
+    </title>
+    <link rel="stylesheet" href="../../src/main.css" />
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap");
+
+        body {
+            font-family: "Montserrat", sans-serif;
+        }
+        tr {
+            text-align: right;
+        }
+
+    </style>
+    <link rel="icon" href="../../src/crow.png">
+</head>
+
+<body id="main">
+    <p>
+        <!-- Yeah, this is kind of a mess. -->
+        <table>
+            <tr>
+                <td>
+                    <label for="down">Down:</label>
+                </td>
+                <td>
+                    <input type="text" name="down" value="ArrowDown" id="down">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="left">Left:</label>
+                </td>
+                <td>
+                    <input type="text" name="left" value="ArrowLeft" id="left">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="right">Right:</label>
+                </td>
+                <td>
+                    <input type="text" name="right" value="ArrowRight" id="right">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="cw">CW:</label>
+                </td>
+                <td>
+                    <input type="text" name="cw" value="ArrowUp" id="cw">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="ccw">CCW:</label>
+                </td>
+                <td>
+                    <input type="text" name="ccw" value="z" id="ccw">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="flip">180 spin:</label>
+                </td>
+                <td>
+                    <input type="text" name="flip" value="a" id="flip">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="hold">Hold:</label>
+                </td>
+                <td>
+                    <input type="text" name="hold" value="c" id="hold">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="drop">Hard drop:</label>
+                </td>
+                <td>
+                    <input type="text" name="drop" value=" " id="drop">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="reset">Reset:</label>
+                </td>
+                <td>
+                    <input type="text" name="reset" value="r" id="reset">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="confirm">Confirm:</label>
+                </td>
+                <td>
+                    <input type="text" name="confirm" value="Enter" id="confirm">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="paused">Pause:</label>
+                </td>
+                <td>
+                    <input type="text" name="paused" value="p" id="paused">
+                </td>
+            </tr>
+
+        </table>
+        <span id="namefinder" class="psuedobutton">Find name of key</span> 
+        <span id="display">
+
+        </span>
+        <br>
+        <button id="generator">Generate</button>
+        <span id="generator_display">
+
+        </span>
+    </p>
+    <script type="module" src="keybind.js"></script>
+</body>
+<!---
+keybinds = {
+	down: "ArrowDown",
+	left: "ArrowLeft",
+	right: "ArrowRight",
+	cw: "ArrowUp",
+	ccw: "z",
+	flip: "a",
+	hold: "c",
+	drop: " ",
+	reset: "r",
+	confirm: "Enter",
+	paused: "p"
+}
+--->
+</html>
+
