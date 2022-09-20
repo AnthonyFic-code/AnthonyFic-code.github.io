@@ -73,7 +73,7 @@ function generateCookie() {
 	d.setTime(d.getTime() + (365*86400*1000));
 	var date = "expires="+ d.toUTCString();
 
-	var cookie_string = "data=" + JSON.stringify(cookie_data) + "; =" + date;
+	var cookie_string = "data=" + JSON.stringify(cookie_data) + "!END COOKඞE DATA; =" + date;
 	document.cookie = cookie_string;
 	console.log(cookie_data);
 }
@@ -164,6 +164,26 @@ function display() {
 			}
 		}
 	}
+	// displaying where the next block will spawn - aka where it'll kill you
+	if(inDanger()) {
+		var current_displayed_piece = nexts[0].rot(0);
+		for(var row = 0; row < current_displayed_piece.length; row++) {
+			for(var col = 0; col < current_displayed_piece[row].length; col++) {
+				if (current_displayed_piece[row][col] == 0) { continue; }
+				var temp_color = (current_displayed_piece[row][col] == 0) ? 'rgb(40, 40, 40)' : findColor(current_displayed_piece[row][col]);
+				var temp_x_pos = (col + 8) * 40;
+				var temp_y_pos = (row) * 40; 
+				ctx.fillStyle = temp_color;
+				if(nexts[0] == blocks['o']) {
+					temp_x_pos += 40;
+				}
+				ctx.fillRect(temp_x_pos + 18, temp_y_pos + 15, 4, 10);
+				ctx.fillRect(temp_x_pos + 15, temp_y_pos + 18, 10, 4);
+
+			}
+		}
+	}
+		
 	// displaying the next few pieces
 	for(var piece = 0; piece < 5; piece++) {
 		var current_displayed_piece = nexts[piece].rot(0);
@@ -221,7 +241,14 @@ function display() {
 	}
 }
 
-
+function inDanger() {
+	for(var row = 0; row < 6; row++) {
+		if(!arraysEqual(grid[row], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) {
+			return true;
+		}
+	}
+	return false; 
+}
 
 // Helper functions
 
@@ -461,6 +488,7 @@ var frames_until_hidden = 0;
 var bag_starter = [];
 default_bag.forEach(item => bag_starter.push(blocks[item]));
 var nexts = [];
+var nexts_text = [];
 // ⮞ Current piece-related
 var current_x;
 var current_y;
@@ -786,6 +814,7 @@ function nextPiece() {
 
 function died() {
 	clearInterval(loop);
+	nexts.unshift(current_block);
 	current_x = null;
 	current_y = null;
 	current_rot = null;
@@ -855,8 +884,9 @@ function gameloop() {
 }
 
 function loadSettings() {
-	var settings = JSON.parse(document.cookie.substring(5));
-	console.log(settings);
+	var data_index = document.cookie.indexOf("data=");
+	var data_end = document.cookie.indexOf("!END COOKඞE DATA");
+	var settings = JSON.parse(document.cookie.substring(data_index+5, data_end));
 	keybinds = settings.keybinds;
 	das = settings.das;
 	arr = settings.arr;
