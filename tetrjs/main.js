@@ -886,6 +886,10 @@ function gameloop() {
 function loadSettings() {
 	var data_index = document.cookie.indexOf("data=");
 	var data_end = document.cookie.indexOf("!END COOKඞE DATA");
+	if(data_end == -1) {
+		more_button.innerHTML = "More buttons <span class=\"red\">Cookie failed to load</span>";
+		return;
+	}
 	var settings = JSON.parse(document.cookie.substring(data_index+5, data_end));
 	keybinds = settings.keybinds;
 	das = settings.das;
@@ -899,4 +903,4 @@ if(document.cookie != "") {
 
 arrayRandomize(bag_starter).forEach(item => nexts.push(item));
 nextPiece();
-var loop = setInterval(gameloop, 16);;
+var loop = setInterval(gameloop, 16);
