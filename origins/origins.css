@@ -1,0 +1,24 @@
+.positive {
+    color: lightgreen
+}
+.negative {
+    color: lightcoral
+}
+
+.health {
+    color: hotpink
+}
+.number {
+    color: violet
+}
+.mana {
+    color: aqua
+}
+
+.darkmana {
+    color: mediumorchid
+}
+
+.special {
+    color: lemonchiffon
+}
