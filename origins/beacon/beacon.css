@@ -1,0 +1,19 @@
+table {
+    width: 500px;
+}
+
+td {
+    text-align: center;
+}
+        
+th, td:nth-child(1) {
+    border: 1px solid black;
+}
+
+td:nth-child(1) {
+    width: 80px;
+}
+
+td:nth-child(4) {
+    width: 200px;
+}
