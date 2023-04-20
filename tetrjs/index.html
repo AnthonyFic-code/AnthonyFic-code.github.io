@@ -25,27 +25,22 @@
     <div id="tetrisdiv">
         <canvas height=800 width=800 id="tetris">
     </div>
-    <hr>
-    <p>
-        <a href="../index.html">Back to main</a> - 
-        <a href="">Reload game</a> (Or hit R) - 
-        <button id="buttons">More buttons</button>
-        <span id="more" class="unrendered">
-            <br>
-            <button><a href="CREDITS.md" target="_blank">Credits</a></button> - 
-            <button><a href="https://you.have.fail/at/tetrio/backgrounds/" target="_blank">Test background</a></button> - 
-            <button id="bg_change">Change background</button>
+    <div id="buttondiv">
+        <div class="right"><button id="buttons">Menu</button></div>
+        <div id="opens" class="unrendered">
+        <table>
             <button><a href="../index.html">Back to main</a></button>
-            <br>
-            <button><a href="keybindings" target="_blank">Keybind generator</a></button> - 
-            <button id="controls">Change controls</button> - 
-            <button id="das">DAS</button> - 
-            <button id="arr">ARR</button> - 
-            Saving uses a cookie btw
-            
-            <br>
-        </span> 
-    </p>
+            <button><a href="../index.html">Reload game</a> (or hit R)</button>
+            <button id="bg_change">Change background</button>
+            <button id="controls">Change controls</button>
+            <button id="das">DAS</button>
+            <button id="arr">ARR</button>
+            <button><a href="CREDITS.md" target="_blank">Credits</a></button>
+            <button><a href="https://you.have.fail/at/tetrio/backgrounds/" target="_blank">Background tester</a></button>
+            <button><a href="keybindings" target="_blank">Keybind generator</a></button>
+        </table>
+        </div>
+    </div>
     <script type="module" src="main.js"></script>
 </body>
 

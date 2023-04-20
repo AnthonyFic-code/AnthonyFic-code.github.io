@@ -4,11 +4,28 @@
 } */
 
 #tetrisdiv {
-    text-align: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+#buttondiv {
+    position:fixed;
+    top:10px;
+    right:10px;
+}
+
+#opens {
+    display: grid;
+}
+
+.right {
+    text-align:right;
 }
 
 .unrendered {
-    display: none;
+    display: none !important;
     background-color: blue;
 }
 

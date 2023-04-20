@@ -1,7 +1,7 @@
 // Page 
 
 var more_opened = false;
-const more_span = document.getElementById("more");
+const more_span = document.getElementById("opens");
 const more_button = document.getElementById("buttons");
 more_button.addEventListener("click", toggle_more);
 function toggle_more() {
@@ -39,7 +39,7 @@ function das_change() {
 const arr_button = document.getElementById("arr");
 arr_button.addEventListener("click", arr_change);
 function arr_change() {
-	var input = prompt("Input new ARR value\nARR is Auto-Repeat Rate.", arr);
+	var input = prompt("Input new ARR value\nARR is Auto-Repeat Rate.\nHolding down a key will repeat every {this many} frames.", arr);
 	if(input == null || input == "") {
 		return;
 	} else {
@@ -88,11 +88,23 @@ const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
 // Visuals
+var old_cache = []
+var cache = [1]
+var frame = 0;
 function display() {
+	if(arraysEqual(old_cache, cache)) {
+		old_cache = [...cache];
+		cache = [current_shape, current_x, current_y, current_rot, piece_count];
+		return;
+	}
+	frame++;
+	old_cache = [...cache];
+	cache = [current_shape, current_x, current_y, current_rot, piece_count];
 	// resetting grid
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.fillStyle = 'rgb(255, 255, 255)';
 	ctx.font = '36px Montserrat';
+	ctx.fillText('' + frame, 40, 40);
 	ctx.fillText('HOLD', 80, 50);
 	ctx.fillText('LEVEL', 75, 600);
 	ctx.fillText('LINES', 75, 740);
@@ -115,10 +127,6 @@ function display() {
 		ctx.fillText("will cancel.", 600, 792);
 		ctx.font = '36px Montserrat';
 	}
-	ctx.fillStyle = 'rgb(128, 255, 128, ' + frames_until_hidden/480 + ')';
-	ctx.fillText('+' + recent_score, 615, 550);
-	ctx.fillStyle = 'rgb(128, 255, 128)';
-	ctx.fillRect(615, 560, 150*(frames_until_hidden/480), 5);
 
 	ctx.fillStyle = 'rgb(255, 255, 255)';
 	ctx.fillText('SCORE', 615, 600);
@@ -253,13 +261,13 @@ function inDanger() {
 // Helper functions
 
 var active_colors = {
-	0: 'rgb(128, 128, 128)',
-	1: 'rgb(255, 0, 0)',
-	2: 'rgb(0, 255, 0)',
-	3: 'rgb(255, 128, 0)',
-	4: 'rgb(0, 64, 255)',
-	5: 'rgb(192, 0, 255)',
-	6: 'rgb(0, 192, 256)',
+	0: 'rgb(64, 64, 64)',
+	1: 'rgb(237, 0, 63)',
+	2: 'rgb(0, 237, 87)',
+	3: 'rgb(255, 176, 18)',
+	4: 'rgb(0, 86, 255)',
+	5: 'rgb(176, 39, 186)',
+	6: 'rgb(0, 229, 237)',
 	7: 'rgb(255, 224, 0)'
 }
 
@@ -361,6 +369,7 @@ function addMinos(block, x_pos, y_pos, rot) {
 		}
 	}
 	clearLines();
+	piece_count += 1;
 }
 
 function clearLines() {
@@ -394,7 +403,6 @@ function clearLines() {
 
 function scoreClears(num_lines, tspinned) {
 	var points_this_turn = 0;
-	frames_until_hidden = 480;
 	var b2b_multi = b2b_chain > 0 ? 1.5 : 1;
 	var combo_multi = 1 + ((combo) / 10);
 	if(arraysEqual(grid[19], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) {
@@ -441,7 +449,6 @@ function scoreClears(num_lines, tspinned) {
 	}
 	points_this_turn = Math.floor(points_this_turn);
 	score += points_this_turn;
-	recent_score += points_this_turn;
 }
 
 function checkTspin() {
@@ -478,12 +485,11 @@ var alive = true;
 var lines = 0;
 var reloading = false;
 var paused = false;
-var recent_score = 0;
 // ⮞ Scoring-related
+var piece_count = 0
 var score = 0;
 var b2b_chain = 0;
 var combo = 0;
-var frames_until_hidden = 0;
 // ⮞ Queue-related
 var bag_starter = [];
 default_bag.forEach(item => bag_starter.push(blocks[item]));
@@ -550,6 +556,7 @@ function resetGame() {
 	alive = true;
 	lines = 0;
 	score = 0;
+	piece_count = 0;
 	b2b_chain = 0;
 	combo = 0;
 	nexts = [];
@@ -564,8 +571,6 @@ function resetGame() {
 	frames_until_lock = frames_to_lock;
 	can_hold = true;
 	held = null;
-	frames_until_hidden = 0;
-	recent_score = 0;
 	paused = false;
 	reloading = false;
 
@@ -826,11 +831,6 @@ function died() {
 
 function gameloop() {
 	if(paused) { return; }
-	frames_until_hidden--;
-	if(frames_until_hidden < 0) {
-		recent_score = 0;
-		frames_until_hidden = 0;
-	}
 	if(das_delay_remaining_side == 0) {
 		arr_delay_remaining_side--;
 		if(arr_delay_remaining_side < 0) {
@@ -887,7 +887,7 @@ function loadSettings() {
 	var data_index = document.cookie.indexOf("data=");
 	var data_end = document.cookie.indexOf("!END COOKඞE DATA");
 	if(data_end == -1) {
-		more_button.innerHTML = "More buttons <span class=\"red\">Cookie failed to load</span>";
+		more_button.innerHTML = "Menu <span class=\"red\">Cookie failed to load</span>";
 		return;
 	}
 	var settings = JSON.parse(document.cookie.substring(data_index+5, data_end));
