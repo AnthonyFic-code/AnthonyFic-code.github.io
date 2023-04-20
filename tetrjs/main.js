@@ -90,21 +90,18 @@ const ctx = canvas.getContext('2d');
 // Visuals
 var old_cache = []
 var cache = [1]
-var frame = 0;
 function display() {
 	if(arraysEqual(old_cache, cache)) {
 		old_cache = [...cache];
 		cache = [current_shape, current_x, current_y, current_rot, piece_count];
 		return;
 	}
-	frame++;
 	old_cache = [...cache];
 	cache = [current_shape, current_x, current_y, current_rot, piece_count];
 	// resetting grid
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.fillStyle = 'rgb(255, 255, 255)';
 	ctx.font = '36px Montserrat';
-	ctx.fillText('' + frame, 40, 40);
 	ctx.fillText('HOLD', 80, 50);
 	ctx.fillText('LEVEL', 75, 600);
 	ctx.fillText('LINES', 75, 740);
