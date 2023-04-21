@@ -93,11 +93,11 @@ var cache = [1]
 function display() {
 	if(arraysEqual(old_cache, cache)) {
 		old_cache = [...cache];
-		cache = [current_shape, current_x, current_y, current_rot, piece_count];
+		cache = [current_shape, current_x, current_y, current_rot, piece_count, paused];
 		return;
 	}
 	old_cache = [...cache];
-	cache = [current_shape, current_x, current_y, current_rot, piece_count];
+	cache = [current_shape, current_x, current_y, current_rot, piece_count, paused];
 	// resetting grid
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.fillStyle = 'rgb(255, 255, 255)';
