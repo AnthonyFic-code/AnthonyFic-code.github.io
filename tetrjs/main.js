@@ -90,14 +90,24 @@ const ctx = canvas.getContext('2d');
 // Visuals
 var old_cache = []
 var cache = [1]
+var ticks = 0;
 function display() {
 	if(arraysEqual(old_cache, cache)) {
 		old_cache = [...cache];
-		cache = [current_shape, current_x, current_y, current_rot, piece_count, paused];
+		cache = [current_shape, current_x, current_y, current_rot, piece_count, reloading, paused];
+		if(paused) {
+			ctx.font = '72px Montserrat'
+			ctx.fillStyle = 'rgb(0, 0, 0, 0.5)'
+			ctx.fillRect(220, 300, 360, 145);
+			ctx.fillStyle = 'rgb(255, 0, 0)';
+			ctx.fillText('PAUSED', 245, 385);
+			ctx.font = '24px Montserrat'
+			ctx.fillText('(click ' + keybinds.paused + ' to unpause)', 245, 425);
+		}
 		return;
 	}
 	old_cache = [...cache];
-	cache = [current_shape, current_x, current_y, current_rot, piece_count, paused];
+	cache = [current_shape, current_x, current_y, current_rot, piece_count, reloading, paused];
 	// resetting grid
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.fillStyle = 'rgb(255, 255, 255)';
