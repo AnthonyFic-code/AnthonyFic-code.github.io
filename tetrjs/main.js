@@ -1,11 +1,8 @@
 // Page 
 
 var more_opened = false;
-var debug = false; // trying to fix firefox bug that only happens on school-owned computers
-
-const more_span = document.getElementById("opens");
-
 const more_button = document.getElementById("buttons");
+const more_span = document.getElementById("opens");
 more_button.addEventListener("click", toggle_more);
 function toggle_more() {
 	if(more_opened) {
@@ -20,7 +17,8 @@ function toggle_more() {
 const debug_button = document.getElementById("debug");
 debug_button.addEventListener("click", toggle_debug);
 function toggle_debug() {
-	debug = !debug;
+	lines = 250;
+	level = 26;
 }
 
 const controls_button = document.getElementById("controls");
@@ -35,6 +33,7 @@ function control_change() {
 		generateCookie();
 	}
 }
+
 const das_button = document.getElementById("das");
 das_button.addEventListener("click", das_change);
 function das_change() {
@@ -46,6 +45,7 @@ function das_change() {
 		generateCookie();
 	}
 }
+
 const arr_button = document.getElementById("arr");
 arr_button.addEventListener("click", arr_change);
 function arr_change() {
@@ -60,14 +60,13 @@ function arr_change() {
 
 const background = document.getElementById("main")
 const bg_button = document.getElementById("bg_change");
+// https://www.geeksforgeeks.org/how-to-validate-hexadecimal-color-code-using-regular-expression/
+var bg = "wallpaper/saiph_unsplash.png";
+
 bg_button.addEventListener("click", bg_change);
 function bg_change() {
-	var input = prompt("Input image link\nRemember, HTML will loop it if the file isn't very large.");
-	if(input == null || input == "") {
-		background.style["background-image"] = "url(saiph_unsplash.png)";
-	} else {
-		background.style["background-image"] = "url(" + input + ")";
-	}
+	var input = prompt("Input image link or hex code\nHTML will loop images if it isn't very large.");
+	setBG(input);
 	generateCookie();
 	
 }
@@ -77,11 +76,8 @@ function generateCookie() {
 		keybinds: keybinds,
 		das: das,
 		arr: arr,
-		bg: background.style["background-image"]
+		bg: bg
 	}
-	const d = new Date();
-	d.setTime(d.getTime() + (365*86400*1000));
-	var date = "expires="+ d.toUTCString();
 
 	var cookie_string = "data=" + JSON.stringify(cookie_data) + " ;SameSite=Lax ;expires=Fri, 31 Dec 9999 23:59:59 GMT;";
 	document.cookie = cookie_string;
@@ -97,6 +93,23 @@ const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
 // Visuals
+
+const px72 = '72px Montserrat';
+const px36 = '36px Montserrat';
+const px24 = '24px Montserrat';
+const white = 'rgb(255, 255, 255)';
+
+var active_colors = {
+	0: 'rgb(64, 64, 64)',
+	1: 'rgb(237, 0, 63)',
+	2: 'rgb(0, 237, 87)',
+	3: 'rgb(255, 176, 18)',
+	4: 'rgb(0, 86, 255)',
+	5: 'rgb(176, 39, 186)',
+	6: 'rgb(0, 229, 237)',
+	7: 'rgb(255, 224, 0)'
+}
+
 function displayText(color, font, text, x, y) {
 	var curStyle = ctx.fillStyle
 	var curFont = ctx.font;
@@ -112,11 +125,6 @@ function displayLines(color, font, text, x, y, delta) {
 		displayText(color, font, text[i], x, y + i * delta);
 	}
 }
-
-const px72 = '72px Montserrat';
-const px36 = '36px Montserrat';
-const px24 = '24px Montserrat';
-const white = 'rgb(255, 255, 255)';
 
 var old_cache = []
 var cache = [1]
@@ -290,17 +298,6 @@ function inDanger() {
 }
 
 // Helper functions
-
-var active_colors = {
-	0: 'rgb(64, 64, 64)',
-	1: 'rgb(237, 0, 63)',
-	2: 'rgb(0, 237, 87)',
-	3: 'rgb(255, 176, 18)',
-	4: 'rgb(0, 86, 255)',
-	5: 'rgb(176, 39, 186)',
-	6: 'rgb(0, 229, 237)',
-	7: 'rgb(255, 224, 0)'
-}
 
 function findColor(x, y=undefined) {
     var tile_number = grid[x][y];
@@ -511,12 +508,12 @@ var grid = [];
 for (var i = 0; i < 20; i++) {
 	grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 }
-var level = 0;
 var alive = true;
-var lines = 0;
 var reloading = false;
 var paused = false;
 // ⮞ Scoring-related
+var level = 0;
+var lines = 0;
 var piece_count = 0
 var score = 0;
 var b2b_chain = 0;
@@ -525,17 +522,16 @@ var combo = 0;
 var bag_starter = [];
 default_bag.forEach(item => bag_starter.push(blocks[item]));
 var nexts = [];
-var nexts_text = [];
 // ⮞ Current piece-related
 var current_x;
 var current_y;
 var current_rot;
 var current_block;
 var current_shape;
-
-var frames_per_down;
-var frames_until_down;
-var frames_to_lock = 50;
+// ⮞ Automatic drop-related
+var ms_per_down;
+var time_next_down;
+const frames_to_lock = 50;
 var frames_until_lock = frames_to_lock;
 var resets_left;
 // ⮞ Held piece-related
@@ -555,7 +551,6 @@ var holding = {
 	confirm: false,
 	paused: false
 };
-// https://www.w3schools.com/js/js_cookies.asp
 var keybinds = {
 	down: "ArrowDown",
 	left: "ArrowLeft",
@@ -572,13 +567,10 @@ var keybinds = {
 var das = 10 // DELAYED AUTO SHIFT - frames until ARR activates
 var arr = 2 // AUTOMATIC REPEAT RATE - frames per repeat
 
-var das_delay_remaining_side = das;
-var arr_delay_remaining_side = arr;
-var das_delay_remaining_down = das;
-var arr_delay_remaining_down = arr;
+var redo_arr_ms_side = Date.now() + (((das + arr) / 60) * 1000);
+var redo_arr_ms_down = Date.now() + (((das + arr) / 60) * 1000);
 
 function resetGame() {
-	clearInterval(loop);
 	grid = [];
 	for (var i = 0; i < 20; i++) {
 		grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -596,9 +588,8 @@ function resetGame() {
 	current_rot = null;
 	current_block = null;
 	current_shape = null;
-	frames_per_down = null;
-	frames_until_down = null;
-	frames_to_lock = 50;
+	ms_per_down = null;
+	time_next_down = null;
 	frames_until_lock = frames_to_lock;
 	can_hold = true;
 	held = null;
@@ -607,7 +598,7 @@ function resetGame() {
 
 	arrayRandomize(bag_starter).forEach(item => nexts.push(item));
 	nextPiece();
-	loop = setInterval(gameloop, 16);
+	window.requestAnimationFrame(gameloop);
 }
 
 
@@ -615,9 +606,6 @@ addEventListener("keydown", press);
 addEventListener("keyup", unpress);
 
 function press(e) {
-	if(debug) {
-		console.log(e.key + " down");
-	}
 	if(e.key == keybinds.confirm && reloading) {
 		if(holding.confirm) { return }
 		holding.confirm = true;
@@ -634,7 +622,7 @@ function press(e) {
 		holding.reset = true;
 		reloading = true;
 		if(paused || !alive){
-			display();
+			display(true);
 		}
 	}
 
@@ -642,7 +630,7 @@ function press(e) {
 		if(holding.paused) { return }
 		holding.paused = true;
 		paused = !paused;
-		display();
+		display(true);
 	}
 
 	if(!alive) { return }
@@ -651,16 +639,14 @@ function press(e) {
 	if(e.key == keybinds.down) {
 		if(holding.down) { return }
 		moveDown();
-		das_delay_remaining_down = das;
-		arr_delay_remaining_down = arr;
+		redo_arr_ms_down = Date.now() + (((das + arr) / 60) * 1000);
 		holding.down = true;
 	}
 
 	if(e.key == keybinds.left) {
 		if(holding.left) { return }
 		moveLeft();
-		das_delay_remaining_side = das;
-		arr_delay_remaining_side = arr;
+		redo_arr_ms_side = Date.now() + (((das + arr) / 60) * 1000);
 		holding.right = false;
 		holding.left = true;
 
@@ -669,8 +655,7 @@ function press(e) {
 	if(e.key == keybinds.right) {
 		if(holding.right) { return }
 		moveRight();
-		das_delay_remaining_side = das;
-		arr_delay_remaining_side = arr;
+		redo_arr_ms_side = Date.now() + (((das + arr) / 60) * 1000);
 		holding.left = false;
 		holding.right = true;
 		
@@ -708,12 +693,15 @@ function press(e) {
 }
 
 function unpress(e) {
-	if(debug) {
-		console.log(e.key + " up");
+	if(e.key == keybinds.down) {
+		holding.down = false; 
 	}
-	if(e.key == keybinds.down) {holding.down = false;}
-	if(e.key == keybinds.left) {holding.left = false;}
-	if(e.key == keybinds.right) {holding.right = false;}
+	if(e.key == keybinds.left) {
+		holding.left = false; 
+	}
+	if(e.key == keybinds.right) {
+		holding.right = false;
+	}
 	if(e.key == keybinds.cw) {holding.cw = false;}
 	if(e.key == keybinds.ccw) {holding.ccw = false;}
 	if(e.key == keybinds.flip) {holding.flip = false;}
@@ -830,10 +818,10 @@ function fullDrop() {
 }
 
 function nextPiece() {
-	frames_per_down = Math.floor(99 / Math.pow(1.2, level));
-	frames_until_down = frames_per_down;
-	frames_to_lock = 50;
+	ms_per_down = Math.floor(1600 / Math.pow(1.2, level));
+	time_next_down = Date.now() + ms_per_down;
 	frames_until_lock = frames_to_lock;
+
 	resets_left = 5;
 	current_block = nexts[0];
 	nexts.splice(0, 1);
@@ -854,7 +842,6 @@ function nextPiece() {
 }
 
 function died() {
-	clearInterval(loop);
 	nexts.unshift(current_block);
 	current_x = null;
 	current_y = null;
@@ -865,54 +852,33 @@ function died() {
 	display(true);
 }
 
-function gameloop() {
-	if(paused) { return; }
-	if(das_delay_remaining_side <= 0) {
-		arr_delay_remaining_side--;
-		if(arr_delay_remaining_side < 0) {
-			if(holding.left) {
-				if(arr == 0) { 
-					while (validPlace(current_block, current_x - 1, current_y, current_rot)){
-						moveLeft();
-					}
-				}
-				if(debug) {
-					console.log("ARR repeated Left");
-				}
-				moveLeft();
-			} 
-			if(holding.right) {
-				if(arr == 0) { 
-					while (validPlace(current_block, current_x + 1, current_y, current_rot)){
-						moveRight();
-					}
-				}
-				if(debug) {
-					console.log("ARR repeated Right");
-				}
-				moveRight();
-			}
-			arr_delay_remaining_side = arr;
+var prev = 0;
+function gameloop(ms) {
+	if(alive) {
+		window.requestAnimationFrame(gameloop);
+	}
+	if(paused) {
+		time_next_down += ms - prev; // so timer doesn't increment while paused
+		prev = ms;
+		return; 
+	}
+	if((holding.left || holding.right) && Date.now() > redo_arr_ms_side) {
+		redo_arr_ms_side += (arr / 60) * 1000;
+		if(holding.left) {
+			moveLeft();
+		}
+		if(holding.right) {
+			moveRight();
 		}
 	}
-	das_delay_remaining_side--;
-
-	if(das_delay_remaining_down <= 0) {
-		arr_delay_remaining_down--;
-		if(arr_delay_remaining_down == 0) {
-			if(holding.down) {
-				if(debug) {
-					console.log("ARR repeated Down");
-				}
-				moveDown();
-			} 
-			arr_delay_remaining_down = arr;
+	if(Date.now() > redo_arr_ms_down) {
+		redo_arr_ms_down += (arr / 60) * 1000;
+		if(holding.down) {
+			moveDown();
 		}
 	}
-	das_delay_remaining_down--;
-
-	frames_until_down--;
-	if(frames_until_down < 0) {
+	
+	if(Date.now() > time_next_down) {
 		if(!validPlace(current_block, current_x, current_y+1, current_rot)) {
 			frames_until_lock--;
 			if(frames_until_lock < 0) {
@@ -920,27 +886,49 @@ function gameloop() {
 			}
 		} else {
 			moveDown();
-			frames_until_down = frames_per_down;
+			time_next_down += ms_per_down;
 		}
 	}
 	display();
+	prev = ms;
 }
 function loadSettings() {
-	var cookies = document.cookie.split(";")
-	for(var i = 0; i < cookies.length; i++) {
-		if (cookies[i].split('=')[0].trim() == "data") {
-			var settings = JSON.parse(cookies[i].split('=')[1]);
-			keybinds = settings.keybinds;
-			das = settings.das;
-			arr = settings.arr;
-			background.style["background-image"] = settings.bg;
-			return;
+	try {
+		var cookies = document.cookie.split(";")
+		for(var i = 0; i < cookies.length; i++) {
+			if (cookies[i].split('=')[0].trim() == "data") {
+				var settings = JSON.parse(cookies[i].split('=')[1]);
+				keybinds = settings.keybinds;
+				das = settings.das;
+				arr = settings.arr;
+				setBG(settings.bg);
+				return;
+			}
 		}
+	} catch (error) {
+		more_button.innerHTML = "Menu <span class=\"red\">Cookie failed to load</span>";
 	}
 	more_button.innerHTML = "Menu <span class=\"red\">Cookie failed to load</span>";
-	return;
+}
 
-	
+const isHex = new RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/);
+const backgrounds_list = [
+	"saiph_unsplash.png",
+	"tobias_keller_unsplash.png"
+];
+function setBG(input) {
+	if(input == null || input == "") {
+		background.style["background-image"] = "url(wallpaper/" + backgrounds_list[Math.floor(Math.random() * backgrounds_list.length)] + ")";
+		background.style["background-color"] = "#242424";
+	} else if(isHex.test(input)) {
+		background.style["background-image"] = "none";
+		background.style["background-color"] = input;
+	} else {
+		background.style["background-image"] = "url(" + input + ")";
+		background.style["background-color"] = "#242424";
+		
+	}
+	bg = input;
 }
 
 if(document.cookie != "") {
@@ -949,4 +937,4 @@ if(document.cookie != "") {
 
 arrayRandomize(bag_starter).forEach(item => nexts.push(item));
 nextPiece();
-var loop = setInterval(gameloop, 16);
+window.requestAnimationFrame(gameloop);
