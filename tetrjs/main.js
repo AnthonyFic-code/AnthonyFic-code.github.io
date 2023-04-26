@@ -1,7 +1,10 @@
 // Page 
 
 var more_opened = false;
+var debug = false; // trying to fix firefox bug that only happens on school-owned computers
+
 const more_span = document.getElementById("opens");
+
 const more_button = document.getElementById("buttons");
 more_button.addEventListener("click", toggle_more);
 function toggle_more() {
@@ -13,6 +16,13 @@ function toggle_more() {
 		more_opened = true;
 	}
 }
+
+const debug_button = document.getElementById("debug");
+debug_button.addEventListener("click", toggle_debug);
+function toggle_debug() {
+	debug = !debug;
+}
+
 const controls_button = document.getElementById("controls");
 controls_button.addEventListener("click", control_change);
 function control_change() {
@@ -73,9 +83,8 @@ function generateCookie() {
 	d.setTime(d.getTime() + (365*86400*1000));
 	var date = "expires="+ d.toUTCString();
 
-	var cookie_string = "data=" + JSON.stringify(cookie_data) + "!END COOKඞE DATA; =" + date;
+	var cookie_string = "data=" + JSON.stringify(cookie_data) + " ;SameSite=Lax ;expires=Fri, 31 Dec 9999 23:59:59 GMT;";
 	document.cookie = cookie_string;
-	console.log(cookie_data);
 }
 
 //// TETR.JS
@@ -88,21 +97,42 @@ const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
 // Visuals
+function displayText(color, font, text, x, y) {
+	var curStyle = ctx.fillStyle
+	var curFont = ctx.font;
+	ctx.fillStyle = color;
+	ctx.font = font;
+	ctx.fillText(text, x, y);
+	ctx.fillStyle = curStyle;
+	ctx.font = curFont;
+}
+
+function displayLines(color, font, text, x, y, delta) {
+	for(var i = 0; i < text.length; i++) {
+		displayText(color, font, text[i], x, y + i * delta);
+	}
+}
+
+const px72 = '72px Montserrat';
+const px36 = '36px Montserrat';
+const px24 = '24px Montserrat';
+const white = 'rgb(255, 255, 255)';
+
 var old_cache = []
 var cache = [1]
-var ticks = 0;
-function display() {
-	if(arraysEqual(old_cache, cache)) {
+function display(force=false) {
+	ctx.font = px24;
+	ctx.fillStyle = 'rgb(255, 255, 255)';
+	// cache
+	if(!force && arraysEqual(old_cache, cache)) {
 		old_cache = [...cache];
 		cache = [current_shape, current_x, current_y, current_rot, piece_count, reloading, paused];
 		if(paused) {
-			ctx.font = '72px Montserrat'
 			ctx.fillStyle = 'rgb(0, 0, 0, 0.5)'
 			ctx.fillRect(220, 300, 360, 145);
-			ctx.fillStyle = 'rgb(255, 0, 0)';
-			ctx.fillText('PAUSED', 245, 385);
+			displayText('rgb(255, 0, 0)', px72, 'PAUSED', 245, 385)
 			ctx.font = '24px Montserrat'
-			ctx.fillText('(click ' + keybinds.paused + ' to unpause)', 245, 425);
+			displayText('rgb(255, 0, 0)', px24, '(click ' + keybinds.paused + ' to unpause)', 245, 425)
 		}
 		return;
 	}
@@ -110,42 +140,38 @@ function display() {
 	cache = [current_shape, current_x, current_y, current_rot, piece_count, reloading, paused];
 	// resetting grid
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.fillStyle = 'rgb(255, 255, 255)';
-	ctx.font = '36px Montserrat';
-	ctx.fillText('HOLD', 80, 50);
-	ctx.fillText('LEVEL', 75, 600);
-	ctx.fillText('LINES', 75, 740);
+	// labels
+	displayText(white, px36, 'HOLD', 80, 50);
+	displayText(white, px36, 'LEVEL', 75, 600);
+	displayText(white, px36, 'LINES', 75, 740);
+	displayText(white, px36, 'NEXT', 615, 50);
+	displayText(white, px36, 'SCORE', 615, 600);
+	// stats
 	if(combo > 1) {
-		ctx.fillStyle = 'rgb(0, 125, 255)';
-		ctx.fillText('COMBO', 50, 480);
-		ctx.fillText('x' + combo, 50, 450);
+		displayLines('rgb(0, 125, 255)', px36, [
+			'COMBO',
+			'x' + combo
+		], 50, 450, 30);
 	}
 	if(b2b_chain > 0) {
-		ctx.fillStyle = 'rgb(255, 125, 4)';
-		ctx.fillText('🔥 B2B x' + b2b_chain, 0, 520);
+		displayText('rgb(255, 125, 4)', px36, '🔥 B2B x' + b2b_chain, 0, 520);
 	}
 	if(reloading) {
-		ctx.font = '24px Montserrat';
-		ctx.fillStyle = 'rgb(255, 0, 0)';
-		ctx.fillText('RESETTING!', 600, 696);
-		ctx.fillText("Hit " + keybinds.confirm, 600, 720);
-		ctx.fillText("to confirm.", 600, 744);
-		ctx.fillText("Anything else", 600, 768);
-		ctx.fillText("will cancel.", 600, 792);
+		displayLines('rgb(255, 0, 0)', px24, [
+			"RESETTING!",
+			"Hit " + keybinds.confirm,
+			"to confirm.",
+			"Anything else",
+			"will cancel."
+		], 600, 696, 24);
 		ctx.font = '36px Montserrat';
 	}
-
-	ctx.fillStyle = 'rgb(255, 255, 255)';
-	ctx.fillText('SCORE', 615, 600);
-	ctx.fillText('NEXT', 615, 50);
-	
-	if(!alive) {
-		ctx.fillStyle = 'rgb(255, 96, 96)';
-	}
+	var statcolor = alive ? white : 'rgb(255, 96, 96)'
 	ctx.font = '36px Ubuntu';
-	ctx.fillText(formattedScore(score), 615, 640);
-	ctx.fillText(level, 129-numDigits(level)*10.5, 640);
-	ctx.fillText(lines, 129-numDigits(lines)*10.5, 780);
+	displayText(statcolor, '36px Ubuntu', formattedScore(score), 615, 640);
+	displayText(statcolor, '36px Ubuntu', level, 129-numDigits(level)*10.5, 640);
+	displayText(statcolor, '36px Ubuntu', lines, 129-numDigits(lines)*10.5, 780);
+
     // draw grid
     for(var row = 0; row < 20; row++) {
         for (var col = 0; col < 10; col++) {
@@ -246,13 +272,11 @@ function display() {
 	}
 
 	if(paused) {
-		ctx.font = '72px Montserrat'
 		ctx.fillStyle = 'rgb(0, 0, 0, 0.5)'
 		ctx.fillRect(220, 300, 360, 145);
-		ctx.fillStyle = 'rgb(255, 0, 0)';
-		ctx.fillText('PAUSED', 245, 385);
+		displayText('rgb(255, 0, 0)', px72, 'PAUSED', 245, 385)
 		ctx.font = '24px Montserrat'
-		ctx.fillText('(click ' + keybinds.paused + ' to unpause)', 245, 425);
+		displayText('rgb(255, 0, 0)', px24, '(click ' + keybinds.paused + ' to unpause)', 245, 425)
 	}
 }
 
@@ -591,7 +615,9 @@ addEventListener("keydown", press);
 addEventListener("keyup", unpress);
 
 function press(e) {
-
+	if(debug) {
+		console.log(e.key + " down");
+	}
 	if(e.key == keybinds.confirm && reloading) {
 		if(holding.confirm) { return }
 		holding.confirm = true;
@@ -682,6 +708,9 @@ function press(e) {
 }
 
 function unpress(e) {
+	if(debug) {
+		console.log(e.key + " up");
+	}
 	if(e.key == keybinds.down) {holding.down = false;}
 	if(e.key == keybinds.left) {holding.left = false;}
 	if(e.key == keybinds.right) {holding.right = false;}
@@ -801,7 +830,7 @@ function fullDrop() {
 }
 
 function nextPiece() {
-	frames_per_down = Math.floor(99 / Math.pow(1.1, level));
+	frames_per_down = Math.floor(99 / Math.pow(1.2, level));
 	frames_until_down = frames_per_down;
 	frames_to_lock = 50;
 	frames_until_lock = frames_to_lock;
@@ -833,12 +862,12 @@ function died() {
 	current_shape = null;
 	current_block = null;
 	alive = false;
-	display();
+	display(true);
 }
 
 function gameloop() {
 	if(paused) { return; }
-	if(das_delay_remaining_side == 0) {
+	if(das_delay_remaining_side <= 0) {
 		arr_delay_remaining_side--;
 		if(arr_delay_remaining_side < 0) {
 			if(holding.left) {
@@ -846,6 +875,9 @@ function gameloop() {
 					while (validPlace(current_block, current_x - 1, current_y, current_rot)){
 						moveLeft();
 					}
+				}
+				if(debug) {
+					console.log("ARR repeated Left");
 				}
 				moveLeft();
 			} 
@@ -855,25 +887,29 @@ function gameloop() {
 						moveRight();
 					}
 				}
+				if(debug) {
+					console.log("ARR repeated Right");
+				}
 				moveRight();
 			}
 			arr_delay_remaining_side = arr;
 		}
-	} else {
-		das_delay_remaining_side--;
 	}
+	das_delay_remaining_side--;
 
-	if(das_delay_remaining_down == 0) {
+	if(das_delay_remaining_down <= 0) {
 		arr_delay_remaining_down--;
 		if(arr_delay_remaining_down == 0) {
 			if(holding.down) {
+				if(debug) {
+					console.log("ARR repeated Down");
+				}
 				moveDown();
 			} 
 			arr_delay_remaining_down = arr;
 		}
-	} else {
-		das_delay_remaining_down--;
 	}
+	das_delay_remaining_down--;
 
 	frames_until_down--;
 	if(frames_until_down < 0) {
@@ -889,19 +925,22 @@ function gameloop() {
 	}
 	display();
 }
-
 function loadSettings() {
-	var data_index = document.cookie.indexOf("data=");
-	var data_end = document.cookie.indexOf("!END COOKඞE DATA");
-	if(data_end == -1) {
-		more_button.innerHTML = "Menu <span class=\"red\">Cookie failed to load</span>";
-		return;
+	var cookies = document.cookie.split(";")
+	for(var i = 0; i < cookies.length; i++) {
+		if (cookies[i].split('=')[0].trim() == "data") {
+			var settings = JSON.parse(cookies[i].split('=')[1]);
+			keybinds = settings.keybinds;
+			das = settings.das;
+			arr = settings.arr;
+			background.style["background-image"] = settings.bg;
+			return;
+		}
 	}
-	var settings = JSON.parse(document.cookie.substring(data_index+5, data_end));
-	keybinds = settings.keybinds;
-	das = settings.das;
-	arr = settings.arr;
-	background.style["background-image"] = settings.bg;
+	more_button.innerHTML = "Menu <span class=\"red\">Cookie failed to load</span>";
+	return;
+
+	
 }
 
 if(document.cookie != "") {
