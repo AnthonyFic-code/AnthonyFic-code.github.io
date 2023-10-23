@@ -4,7 +4,7 @@ body {
     background-color: #d4fffb;
 }
 
-li, .px24 {font-size: 24px;}
+.px24 {font-size: 24px;}
 
 #nav {
     height: 60px;
