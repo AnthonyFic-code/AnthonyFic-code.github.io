@@ -1,0 +1,194 @@
+<!-- Class assignment to make a "Taroko Gorge" poem. -->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!--rg the above stuff is essential to declare this as a valid HTML page and generally shouldn't be messed with-->
+  <!--rg The arrow/exclamation/double-hyphen indicates a comment (not parsed by browser) and is then closed with a double-hyphen/closed arrow-->
+  <!--rg In this document, you're going to see 3 kinds of code: HTML, Javascript(JS), and CSS (Cascading Style Sheets)
+HTML - in arrowed brackets. Generally structures the document, declaring different parts
+CSS - can be inside a Style tag, inside specific tags, or in a separate file altogether. Generally structures look and feel
+JS - can be inside a Script tag, inside specific tags, or in a separate file altogether. Generally adds functionality, which may including changing look and feel
+-->
+
+  <!--
+Nick Montfort
+ Original Python program:
+ 8 January 2009, Taroko Gorge National Park, Taiwan and Eva Air Flight 28
+ This JavaScript version, with links:
+ 1 March 2016
+
+        rg: is it the same piece after it's been ported???? can you think of recombination as porting to different platforms in slightly different ways?
+
+Copyright (c) 2009-2016 Nick Montfort <nickm@nickm.com>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+
+
+  <!--rg the next lines (between style tags) are CSS, or Cascading Style Sheets information. This information generally governs the look and feel of a document, including things like color, font, placement.
+
+To start figuring this out, you can cross-reference the primary items (like body, div, a) to where those elements can be found later on in the page. Therefore every div tag will be set to a height of 16 pt; every link will have a color of #117.
+
+Try messing with the background color!
+-->
+
+  <style type="text/css">
+    /* <![CDATA[ */
+    body {
+      background: rgb(131, 233, 246);
+      color: #dad;
+      margin: 0 24pt 0 24pt;
+      font-family: Optima, sans-serif;
+      font-size: 13pt;
+    }
+
+    div {
+      height: 16pt;
+      color: rgb(0, 0, 0);
+    }
+
+    a {
+      color: #876;
+      text-decoration: none;
+    }
+
+    /* ]]> */
+  </style>
+
+  <!--rg Okay, here's the Javascript. This is where 99% of the functionality of Taroko Gorge lives.
+Notice that, inside the <script> tags, I'm going to be commenting a bit differently; that's because a Javascript comment has the syntax //.
+-->
+
+  <script type="text/javascript">
+    var t = 0;
+    var n = -1;
+    var lines = 0;
+
+    //functions perform certain tasks that will be called later. look down the road for "rand_range", for example in the path function.
+
+    //rg math.floor returns the largest integer of a number - 5.05 will return 5
+    //rg math.random returns a random number between 0 and 1, multiplies times max+1, then returning the floor integer. Designed to get a random number of a particular size.
+
+    function randRange(max) {
+      return Math.floor(Math.random() * (max + 1));
+    }
+
+    //rg the choose function chooses one of the arrays which contain text. This will select a particular item in a text array.    
+    //rg you can see this function called in path, used in path, cave, and site functions below, which all generate one line of content
+    function choose(array) {
+      return array[randRange(array.length - 1)];
+    }
+
+    function titleCase(str) {
+      return str.substring(0, 1).toUpperCase() + str.substring(1, str.length);
+    }
+
+    var rec_start = "why not go to;take a trip to;visit;buy a ticket for;you've got to see".split(";")
+    var rec_placename = "eastern;western;sunny;paradise;coral;radiator;ocean;lake".split(";")
+    var rec_placedesc = "springs;camp;paradise;resort;city;parks;islands".split(";")
+
+    function recommendation() {
+      return `${choose(rec_start)} ${titleCase(choose(rec_placename))} ${titleCase(choose(rec_placedesc))}!`
+    }
+
+    var feat_observing = "watch;view;visit;attend;admire;walk by;swim by;take a hike with".split(";")
+    var feat_acting = "relax at;ride;have fun at;enjoy".split(";")
+
+    var feat_to_see = "birds;scenery;mountains;lakes;wildlife;bands;beautiful ocean".split(";")
+    var feat_to_do_with = "rides;attractions;exhibits;water park;waves".split(";")
+
+    var feat_continuation = "don't forget to;and;make sure to;especially".split(";")
+
+    function features(ending) {
+      if(randRange(2) == 1) {
+        ret = `${choose(feat_observing)} the ${choose(feat_to_see)}`
+      } else {
+        ret = `${choose(feat_acting)} the ${choose(feat_to_do_with)}`
+      }
+  
+      if(ending) {
+        ret = `${choose(feat_continuation)} ${ret}!`
+      }
+
+      return ret
+    }
+    
+
+
+    function addLine() {
+      var main = document.getElementById('main');
+
+      //if just starting to run, add a line, else remove a line before adding one    
+      if (t <= 50) {
+        t += 1;
+      } else {
+        main.removeChild(document.getElementById('main').firstChild);
+      }
+      //if first line, then leave a blank. try messing with it! (in single quotes is a string)
+
+      if(n == lines) {
+        text = recommendation()
+        lines = randRange(2) + 4
+        n = 0
+      } else if(n == lines - 1) {
+        text = ""
+      } else {
+        text = features(n == lines - 2)
+      }
+
+      n += 1;
+      text = titleCase(text)
+      // text = `${n}/${lines} ${text}`
+      last = document.createElement('div');
+      last.appendChild(document.createTextNode(text));
+      main.appendChild(last);
+    }
+
+    //rg this function puts it all together (the above functions)
+    //rg it calls the do_line function, producing a line of text
+    //note that you can affect the timing here (1200=milliseconds, or 1.2 seconds between lines)
+    //what i'm not clear about is how the variable counters persist
+    function poem() {
+      setInterval(addLine, 200);
+    }
+  </script>
+
+  <!--rg HTML1: Try altering the text inside the Title Tag and refreshing-->
+  <!--that way, you'll know you can quickly change things-->
+  <title>Tourist Guide</title>
+</head>
+
+<!--rg You could actually delete everything from after the next line all the way through to the last three lines. Or better, comment it out!-->
+
+<!--rg the word poem here is actually calling the JS function "poem" we just saw!-->
+
+<body onload="poem()">
+
+  <!--rg start commenting out here-->
+
+
+  <div style="float:right; margin-top:12px; color:#0b3; height:60pt">
+    <div>Anthony F &middot; 2026-10-01</div>
+    <div>"Tourist Guide"</div>
+    <div style="font-size: 12px"><a href="https://nickm.com/poems/taroko_gorge/">What is this?</a></div>
+
+  </div>
+
+  <!--rg end commenting out here-->
+  <div id="main"></div>
+</body>
+
+</html>
