@@ -96,7 +96,7 @@ Notice that, inside the <script> tags, I'm going to be commenting a bit differen
       return str.substring(0, 1).toUpperCase() + str.substring(1, str.length);
     }
 
-    var rec_start = "why not go to;take a trip to;visit;buy a ticket for;you've got to see".split(";")
+    var rec_start = "why not go to;take a trip to;visit;buy a ticket for;you've got to see;come down to;check out".split(";")
     var rec_placename = "eastern;western;sunny;paradise;coral;radiator;ocean;lake".split(";")
     var rec_placedesc = "springs;camp;paradise;resort;city;parks;islands".split(";")
 
@@ -140,17 +140,16 @@ Notice that, inside the <script> tags, I'm going to be commenting a bit differen
       //if first line, then leave a blank. try messing with it! (in single quotes is a string)
 
       if(n == lines) {
-        text = recommendation()
+        text = titleCase(recommendation())
         lines = randRange(2) + 4
         n = 0
       } else if(n == lines - 1) {
         text = ""
       } else {
-        text = features(n == lines - 2)
+        text = "\u00a0\u00a0" + titleCase(features(n == lines - 2))
       }
 
       n += 1;
-      text = titleCase(text)
       // text = `${n}/${lines} ${text}`
       last = document.createElement('div');
       last.appendChild(document.createTextNode(text));
@@ -181,9 +180,9 @@ Notice that, inside the <script> tags, I'm going to be commenting a bit differen
 
 
   <div style="float:right; margin-top:12px; color:#0b3; height:60pt">
-    <div>Anthony F &middot; 2026-10-01</div>
-    <div>"Tourist Guide"</div>
-    <div style="font-size: 12px"><a href="https://nickm.com/poems/taroko_gorge/">What is this?</a></div>
+    <div>"Tourist Guide" &middot; 2026-10-01</div>
+    <div>Anthony F.</div>
+    <div style="font-size: 12px">A remix of <a href="https://nickm.com/poems/taroko_gorge/">Taroko Gorge</a>.</div>
 
   </div>
 
