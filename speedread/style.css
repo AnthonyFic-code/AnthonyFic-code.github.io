@@ -20,7 +20,7 @@ body {
     gap: 10px;
 }
 
-#text {
+.text {
     background-color: #ffffff;
     border: 3px #e2e8f0;
     border-radius: 12px;
@@ -29,6 +29,35 @@ body {
     margin-top: 10px;
 }
 
+#word {
+    background-color: #ffffff;
+    border: 3px #e2e8f0;
+    border-radius: 12px;
+    border-style: solid;
+    padding:10px;
+    margin-top: 10px;
+    text-align: center;
+    font-size: 80px;
+}
+
+#wpmdisplay {
+    font-size: 24px;
+}
+
+#framenum {
+    color: gray
+}
+
 .hidden {
     display: none;
+}
+
+button {
+    background-color: #eef2ff;
+    border: 3px #c7d2fe;
+    color:#0b2385;
+    border-radius: 12px;
+    border-style: solid;
+    padding:5px 10px;
+    text-decoration: underline;
 }

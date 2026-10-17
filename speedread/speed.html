@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed-Reading WPM Test</title>
+    <link rel="stylesheet" href="style.css" />
+    
+</head>
+<body>
+    Speed-Reading test 
+    <a href="index.html"><button>back</button></a>
+    <br />
+    <button id="start">
+        Start
+    </button>
+    <input id="wpmslider" type="range" min="150" max="900" value="300" class="slider">
+    <span id="wpmdisplay">
+        <span id="wpmnum">300 WPM</span> 
+        <span id="framenum">(12f/word)</span>
+    </span>
+    <div id="word">
+        &MediumSpace;
+    </div>
+
+    <script type="module" src="speed.js"></script>
+</body>
+</html>
