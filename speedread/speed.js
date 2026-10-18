@@ -4,6 +4,8 @@ let start_time = 0
 let started = false;
 
 // from https://en.wikipedia.org/wiki/Opal
+// https://en.wikipedia.org/wiki/Pronunciation_of_GIF
+// https://en.wikipedia.org/wiki/Euclidean_algorithm
 const excerpts = {
 '1': `Opal is a hydrated amorphous form of silica; its water content may range from 3% to 21% by weight,
 but is usually between 6% and 10%. Due to the amorphous (chemical) physical structure,
